@@ -1,7 +1,6 @@
 {
   "name": "photobooth",
-  "description": "Watch a directory for new photos to display",
-  "private": true,
+  "description": "Watch a directory for new photos to display.",
   "scripts": {
     "start": "node app.js"
   },
