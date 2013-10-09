@@ -1,11 +1,27 @@
 (function () {
 
+    var transitions = {
+        // Fades in new image while fading out the old one
+        crossFade: function($container, $new, duration) {
+
+            var $old = $container.children('.img').not($new);
+
+            $new.css('opacity', 0).appendTo($container);
+
+            $old.animate({ opacity: 0 }, duration, function() {
+                $old.remove();
+            });
+
+            $new.animate({ opacity: 1 }, duration);
+        }
+    };
+
     function PhotoBooth() {
         return {
             list: [],
             currentIndex: 0,
             timing: 4000,
-            $el: $('.main'),
+            $el: $(document.body),
             timeout: null,
             fetch: function(next) {
                 var self = this;
@@ -47,8 +63,21 @@
                 }
             },
             show: function(path) {
+
                 var fullPath = '/photos/' + encodeURIComponent(path);
-                this.$el.html('<img src="' + fullPath + '">');
+
+                var $new = $('<span class="img"></span>')
+                    .css({
+                        position: 'fixed',
+                        left: 0, right: 0,
+                        top: 0, bottom: 0,
+
+                        'background-image': 'url(' + fullPath + ')'
+                    });
+
+
+                transitions.crossFade(this.$el, $new, 2000);
+
             },
             time: function() {
                 var self = this;
@@ -58,7 +87,7 @@
                 }, this.timing);
             }
 
-        }
+        };
     }
 
 
