@@ -1,6 +1,28 @@
 (function () {
 
     var transitions = {
+        // flashes the entire screen white, swaps out images, and fades out the whiteness
+        // you know, like a flash.
+        flash: function($container, $new, done) {
+
+            var $flash = $container.find('.flash');
+            if (!$flash.length) {
+                $flash = $('<span class="flash"></span>')
+                    .css({ opacity: 0 })
+                    .appendTo($container);
+            }
+
+            $flash.animate({ opacity: 1 }, 100, function() {
+                $container.children('.img').not($new).stop().remove();
+                $new.appendTo($container);
+                $flash.animate({ opacity: 0 }, 1500, function() {
+                    if (done) {
+                        done();
+                    }
+                });
+            });
+
+        },
         // Fades in new image while fading out the old one
         crossFade: function($container, $new, duration, done) {
 
@@ -48,6 +70,7 @@
             newPhotoList: [],
             currentIndex: -1,
             timing: 4000,
+            flashOnNew: true,
             $el: $(document.body),
             timeout: null,
             fetch: function(next) {
@@ -165,7 +188,11 @@
                         'background-image': 'url(' + fullPath + ')'
                     });
 
-                transitions.crossFade(self.$el, $new, 2000);
+                if (isNew && this.flashOnNew) {
+                    transitions.flash(self.$el, $new);
+                } else {
+                    transitions.crossFade(self.$el, $new, 2000);
+                }
 
             }
         };
