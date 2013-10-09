@@ -5,6 +5,10 @@ body {
     margin: 0;
 }
 
+.debug {
+    background-color: pink;
+}
+
 .img {
     background-size: contain;
     background-position: center center;

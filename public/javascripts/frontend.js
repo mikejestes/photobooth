@@ -16,6 +16,25 @@
         }
     };
 
+    var keymap = {
+        'D': {
+            name: 'Toggle debugging mode',
+            run: function() {
+                this.$el.toggleClass('debug');
+            }
+        },
+        '?': {
+            name: 'Show help',
+            run: function() {
+                var message = ['Keyboard commands:', ''];
+                $.each(keymap, function(key, cmd) {
+                    message.push(key + ': ' + cmd.name);
+                });
+                alert(message.join('\n'));
+            }
+        }
+    };
+
     function PhotoBooth() {
         return {
             list: [],
@@ -53,6 +72,21 @@
                         self.time.apply(self);
                     }, self.timing);
 
+                });
+
+                self.$el.keypress(function(evt) {
+                    var action = keymap[String.fromCharCode(evt.which).toUpperCase()];
+                    action && action.run.apply(self);
+                }).keydown(function(evt) {
+                    var keys = {
+                        39: 'RIGHT ARROW',
+                        37: 'LEFT ARROW'
+                    },
+                    key = keys[evt.which];
+                    if (key) {
+                        var action = keymap[key];
+                        action && action.run.apply(self);
+                    }
                 });
             },
             showNext: function() {
