@@ -2,17 +2,21 @@
 
     var transitions = {
         // Fades in new image while fading out the old one
-        crossFade: function($container, $new, duration) {
+        crossFade: function($container, $new, duration, done) {
 
-            var $old = $container.children('.img').not($new);
+            var $old = $container.children('.img');
 
             $new.css('opacity', 0).appendTo($container);
 
-            $old.animate({ opacity: 0 }, duration, function() {
+            $old.stop().animate({ opacity: 0 }, duration);
+
+            $new.animate({ opacity: 1 }, duration, function() {
                 $old.remove();
+                if (done) {
+                    done();
+                }
             });
 
-            $new.animate({ opacity: 1 }, duration);
         }
     };
 
@@ -37,8 +41,12 @@
 
     function PhotoBooth() {
         return {
+            // Two separate photo queues are used-- one for cycling through
+            // ALL pictures during downtime, and one for displaying new photos
+            // ONCE as they come in.
             list: [],
-            currentIndex: 0,
+            newPhotoList: [],
+            currentIndex: -1,
             timing: 4000,
             $el: $(document.body),
             timeout: null,
@@ -55,22 +63,38 @@
                 var self = this;
                 this.fetch(function() {
                     this.showNext();
-                    self.timeout = setTimeout(function() {
-                        self.time.apply(self);
-                    }, this.timing);
                 });
             },
             listen: function() {
                 var socket = io.connect('http://localhost:3000');
+                var seen = {};
                 var self = this;
+
+                var showNewPhotoTimeout = 0;
+
                 socket.on('newPhoto', function (data) {
+
+                    // HACK: Some photos were coming down multiple times in
+                    // testing, not sure where the issue lies.
+                    if (seen[data.path]) {
+                        return;
+                    }
+
+                    seen[data.path] = true;
+
                     console.log('newPhoto', data);
                     self.list.push(data.path);
-                    self.show(data.path);
-                    clearTimeout(self.timeout);
-                    self.timeout = setTimeout(function() {
-                        self.time.apply(self);
-                    }, self.timing);
+                    self.newPhotoList.push(data.path);
+
+                    // debounce call to showNext in case we are actually receiving
+                    // multiple successive newPhoto events-- try to ensure that
+                    // in this case, the most recent photo is shown first.
+                    if (showNewPhotoTimeout) {
+                        clearTimeout(showNewPhotoTimeout);
+                    }
+                    showNewPhotoTimeout = setTimeout(function() {
+                        self.showNext();
+                    }, 500);
 
                 });
 
@@ -90,17 +114,49 @@
                 });
             },
             showNext: function() {
-                this.show(this.list[this.currentIndex]);
-                this.currentIndex++;
-                if (this.currentIndex >= this.list.length) {
-                    this.currentIndex = 0;
-                }
-            },
-            show: function(path) {
 
+                var path = null, isNew = false;
+                var self = this;
+
+                if (self.timeout) {
+                    clearTimeout(self.timeout);
+                    delete self.timeout;
+                }
+
+                // favor photos that have not been shown over those that have
+                if (self.newPhotoList.length > 0) {
+
+                    path = self.newPhotoList.pop();
+                    isNew = true;
+
+                } else if (self.list.length > 0) {
+
+                    self.currentIndex++;
+                    if (self.currentIndex >= self.list.length) {
+                        self.currentIndex = 0;
+                    }
+
+                    path = self.list[self.currentIndex];
+                }
+
+                if (path) {
+                    // console.log('selected ' + (isNew ? 'new' : 'old') + ' image: ' + path);
+                    self.show(path, isNew);
+                }
+
+                self.timeout = setTimeout(function() {
+                    delete self.timeout;
+                    self.showNext();
+                }, self.timing);
+
+            },
+            show: function(path, isNew) {
+
+                var self = this;
                 var fullPath = '/photos/' + encodeURIComponent(path);
 
                 var $new = $('<span class="img"></span>')
+                    .text(path + ' (' + (isNew ? "NEW" : "OLD") + ')')
                     .css({
                         position: 'fixed',
                         left: 0, right: 0,
@@ -109,18 +165,9 @@
                         'background-image': 'url(' + fullPath + ')'
                     });
 
+                transitions.crossFade(self.$el, $new, 2000);
 
-                transitions.crossFade(this.$el, $new, 2000);
-
-            },
-            time: function() {
-                var self = this;
-                this.showNext();
-                self.timeout = setTimeout(function() {
-                    self.time.apply(self);
-                }, this.timing);
             }
-
         };
     }
 
