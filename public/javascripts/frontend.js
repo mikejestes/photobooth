@@ -70,6 +70,7 @@
             newPhotoList: [],
             currentIndex: -1,
             timing: 4000,
+            newPhotoTiming: 8000,
             flashOnNew: true,
             $el: $(document.body),
             timeout: null,
@@ -167,10 +168,17 @@
                     self.show(path, isNew);
                 }
 
+                var timing = self.timing;
+                if (isNew && self.newPhotoList.length === 0) {
+                    // No upcoming new photos, so keep this one on screen a
+                    // little longer.
+                    timing = self.newPhotoTiming;
+                }
+
                 self.timeout = setTimeout(function() {
                     delete self.timeout;
                     self.showNext();
-                }, self.timing);
+                }, timing);
 
             },
             show: function(path, isNew) {
