@@ -139,7 +139,7 @@
             },
             showNext: function() {
 
-                var path = null, isNew = false;
+                var path = null, isNew = false, index;
                 var self = this;
 
                 if (self.timeout) {
@@ -160,12 +160,13 @@
                         self.currentIndex = 0;
                     }
 
-                    path = self.list[self.currentIndex];
+                    index = self.currentIndex;
+                    path = self.list[index];
                 }
 
                 if (path) {
                     // console.log('selected ' + (isNew ? 'new' : 'old') + ' image: ' + path);
-                    self.show(path, isNew);
+                    self.show(path, isNew, index);
                 }
 
                 var timing = self.timing;
@@ -181,13 +182,21 @@
                 }, timing);
 
             },
-            show: function(path, isNew) {
+            show: function(path, isNew, index) {
 
                 var self = this;
                 var fullPath = '/photos/' + encodeURIComponent(path);
 
+                var desc = path;
+
+                if (index !== void 0) {
+                    desc += " (" + (index + 1) + "/" + self.list.length + ")";
+                } else if (isNew) {
+                    desc += " (new, " + self.newPhotoList.length + " remain)";
+                }
+
                 var $new = $('<span class="img"></span>')
-                    .text(path + ' (' + (isNew ? "NEW" : "OLD") + ')')
+                    .text(desc)
                     .css({
                         position: 'fixed',
                         left: 0, right: 0,
