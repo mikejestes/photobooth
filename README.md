@@ -10,8 +10,10 @@ Running the app
 
     node app.js ~/Photos/2013-02-11
 
-TODO
-----
+Keyboard Shortcuts
+------------------
 
-* [ ] Keyboard handling of next/prev and faster/slower
-* [ ] Photo transitions
+* `left arrow` or `up arrow` displays previous photo
+* `right arrow` or 'down arrow` displays next photo
+* `D` to enter debug mode
+* `R` to toggle random photo order, or sequential

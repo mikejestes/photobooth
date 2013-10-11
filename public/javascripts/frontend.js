@@ -1,5 +1,9 @@
 (function () {
 
+    function getRandomInt (min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     var transitions = {
         // flashes the entire screen white, swaps out images, and fades out the whiteness
         // you know, like a flash.
@@ -49,6 +53,12 @@
                 this.$el.toggleClass('debug');
             }
         },
+        'R': {
+            name: 'Toggle random or sequential display',
+            run: function() {
+                this.displayRandom = !this.displayRandom;
+            }
+        },
         'next': {
             name: 'Advance to next image',
             run: function() {
@@ -84,6 +94,7 @@
             timing: 4000,
             newPhotoTiming: 8000,
             flashOnNew: true,
+            displayRandom: false,
             $el: $(document.body),
             timeout: null,
             fetch: function(next) {
@@ -155,9 +166,16 @@
 
                 var path = null, isNew = false, index;
                 var self = this;
+                var defaultAdvanceBy = 1,
+                    defaultResetIndex = 0;
+
+                if (self.displayRandom) {
+                    defaultAdvanceBy = getRandomInt(1, self.list.length - 1);
+                    defaultResetIndex = getRandomInt(1, self.list.length - 1);
+                }
 
                 if (typeof advanceBy == 'undefined') {
-                    advanceBy = 1;
+                    advanceBy = defaultAdvanceBy;
                 }
 
                 if (self.timeout) {
@@ -175,7 +193,7 @@
 
                     self.currentIndex += advanceBy;
                     if (self.currentIndex >= self.list.length) {
-                        self.currentIndex = 0;
+                        self.currentIndex = defaultResetIndex;
                     }
 
                     index = self.currentIndex;
