@@ -14,6 +14,6 @@ Keyboard Shortcuts
 ------------------
 
 * `left arrow` or `up arrow` displays previous photo
-* `right arrow` or 'down arrow` displays next photo
+* `right arrow` or `down arrow` displays next photo
 * `D` to enter debug mode
 * `R` to toggle random photo order, or sequential
