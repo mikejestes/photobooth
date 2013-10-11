@@ -49,6 +49,18 @@
                 this.$el.toggleClass('debug');
             }
         },
+        'next': {
+            name: 'Advance to next image',
+            run: function() {
+                this.showNext(1, true);
+            }
+        },
+        'prev': {
+            name: 'Show previous image',
+            run: function() {
+                this.showNext(-1, true);
+            }
+        },
         '?': {
             name: 'Show help',
             run: function() {
@@ -127,8 +139,10 @@
                     action && action.run.apply(self);
                 }).keydown(function(evt) {
                     var keys = {
-                        39: 'RIGHT ARROW',
-                        37: 'LEFT ARROW'
+                        39: 'next',
+                        40: 'next',
+                        37: 'prev',
+                        38: 'prev'
                     },
                     key = keys[evt.which];
                     if (key) {
@@ -137,10 +151,14 @@
                     }
                 });
             },
-            showNext: function() {
+            showNext: function(advanceBy, quick) {
 
                 var path = null, isNew = false, index;
                 var self = this;
+
+                if (typeof advanceBy == 'undefined') {
+                    advanceBy = 1;
+                }
 
                 if (self.timeout) {
                     clearTimeout(self.timeout);
@@ -155,7 +173,7 @@
 
                 } else if (self.list.length > 0) {
 
-                    self.currentIndex++;
+                    self.currentIndex += advanceBy;
                     if (self.currentIndex >= self.list.length) {
                         self.currentIndex = 0;
                     }
@@ -166,7 +184,7 @@
 
                 if (path) {
                     // console.log('selected ' + (isNew ? 'new' : 'old') + ' image: ' + path);
-                    self.show(path, isNew, index);
+                    self.show(path, isNew, index, quick);
                 }
 
                 var timing = self.timing;
@@ -182,12 +200,17 @@
                 }, timing);
 
             },
-            show: function(path, isNew, index) {
+            show: function(path, isNew, index, quick) {
 
                 var self = this;
                 var fullPath = '/photos/' + encodeURIComponent(path);
 
                 var desc = path;
+                var transitionTime = 2000;
+
+                if (quick) {
+                    transitionTime = 400;
+                }
 
                 if (index !== void 0) {
                     desc += " (" + (index + 1) + "/" + self.list.length + ")";
@@ -208,7 +231,7 @@
                 if (isNew && this.flashOnNew) {
                     transitions.flash(self.$el, $new);
                 } else {
-                    transitions.crossFade(self.$el, $new, 2000);
+                    transitions.crossFade(self.$el, $new, transitionTime);
                 }
 
             }
