@@ -129,7 +129,6 @@
 
                     seen[data.path] = true;
 
-                    console.log('newPhoto', data);
                     self.list.push(data.path);
                     self.newPhotoList.push(data.path);
 
@@ -186,7 +185,7 @@
                 // favor photos that have not been shown over those that have
                 if (self.newPhotoList.length > 0) {
 
-                    path = self.newPhotoList.pop();
+                    path = self.newPhotoList.shift();
                     isNew = true;
 
                 } else if (self.list.length > 0) {
